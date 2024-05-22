@@ -1,5 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+
 import { BookData, fetchBookData } from "./utils/fetchBookData";
+import Table from "./components/Table";
+
+const LOCAL_STORAGE_KEY = "bookData";
 
 function App() {
     const [bookData, setBookData] = useState<BookData[]>([]);
@@ -7,27 +11,72 @@ function App() {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const bookApiResponse = await fetchBookData();
-                setBookData(bookApiResponse);
-            } finally {
+            const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (cachedData) {
+                setBookData(JSON.parse(cachedData));
                 setLoading(false);
+            } else {
+                try {
+                    const bookApiResponse = await fetchBookData();
+                    setBookData(bookApiResponse);
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(bookApiResponse));
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 
         fetchData();
-    }, []); // Empty dependency array to run only once on mount
+    }, []);
+
+    //declaring columns
+    const columns = useMemo(
+        () => [
+            {
+                header: "Title",
+                accessorKey: "title",
+            },
+
+            {
+                header: "Author",
+                accessorKey: "author_names",
+            },
+            {
+                header: "First Publish Year",
+                accessorKey: "first_publish_year",
+            },
+            {
+                header: "Subject",
+                accessorKey: "subject",
+            },
+            {
+                header: "Author Birth Date",
+                accessorKey: "author_birth_date",
+            },
+            {
+                header: "Author Top Work",
+                accessorKey: "author_top_work",
+            },
+            {
+                header: "Rating",
+                accessorKey: "rating",
+            },
+        ],
+        []
+    );
 
     if (loading) {
-        return <h1>Please wait...</h1>;
+        return (
+            <div className="flex justify-center items-center h-screen text-blue-500 text-2xl">
+                Please wait...
+            </div>
+        );
     }
-    console.log(bookData);
 
     return (
-        <>
-            <h1 className="text-4xl">Hello</h1>
-            <pre>{JSON.stringify(bookData, null, 2)}</pre>
-        </>
+        <div className="max-w-7xl mx-auto flex justify-center mt-8 h-screen">
+            <Table data={bookData} columns={columns} />
+        </div>
     );
 }
 

@@ -60,10 +60,10 @@ export const fetchBookData = async (): Promise<BookData[]> => {
                 console.error(`Error fetching author data for ${data.author_names}:`, error);
                 return {
                     ...data,
-                    subject: "N/A",
-                    author_birth_date: "N/A",
-                    author_top_work: "N/A",
-                    rating: "N/A",
+                    subject: "Not Available",
+                    author_birth_date: "Not Available",
+                    author_top_work: "Not Available",
+                    rating: "Not Available",
                 };
             }
         });
