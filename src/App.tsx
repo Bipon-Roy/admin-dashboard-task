@@ -74,7 +74,7 @@ function App() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto flex justify-center mt-8 h-screen">
+        <div className="container mx-auto my-8">
             <Table data={bookData} columns={columns} />
         </div>
     );
