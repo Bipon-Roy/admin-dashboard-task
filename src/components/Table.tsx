@@ -43,11 +43,11 @@ const EditableCell: React.FC<{
     );
 };
 
-// Declare essential modules from tanstack table
 const Table: React.FC<TableProps> = ({ data, columns }) => {
     const [sortedData, setSortedData] = useState<BookData[]>(data); // State to hold sorted data
     const [sortOption, setSortOption] = useState<string>(""); // State to hold selected sorting option
 
+    //sorting logic
     useEffect(() => {
         const sortData = (option: string) => {
             let sorted: BookData[] = [];
@@ -68,7 +68,7 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
         };
         sortData(sortOption);
     }, [sortOption, data]); // Re-sort data when sortOption changes
-
+    // Declare essential modules from tanstack table
     const table = useReactTable<BookData>({
         columns,
         data: sortedData, // Use sorted data for rendering
@@ -85,6 +85,7 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
 
     return (
         <div className="overflow-x-auto mx-4">
+            {/* Ascending & Descending sorting menu*/}
             <div className="flex items-center gap-2 mb-3">
                 <span>Sort by:</span>
                 <select
@@ -140,6 +141,7 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
                 </tbody>
             </table>
 
+            {/* Pagination functionality */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-2 mt-3 text-xs md:text-base">
                 <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1">

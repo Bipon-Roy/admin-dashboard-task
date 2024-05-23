@@ -28,7 +28,6 @@ function App() {
 
         fetchData();
     }, []);
-    console.log(bookData);
 
     //declaring columns
     const columns = useMemo(
