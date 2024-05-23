@@ -9,6 +9,13 @@ import {
 } from "@tanstack/react-table";
 import { BookData } from "../utils/fetchBookData";
 
+// Extend the TableMeta interface
+declare module "@tanstack/react-table" {
+    interface TableMeta<TData> {
+        updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+    }
+}
+
 // Define the props for your Table component
 interface TableProps {
     data: BookData[];
@@ -17,13 +24,13 @@ interface TableProps {
 
 // Define a custom cell component
 const EditableCell: React.FC<{
-    getValue: () => unknown; // Update the typing for getValue
+    getValue: () => unknown;
     index: number;
     id: string;
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
 }> = ({ getValue, index, id, updateData }) => {
     const initialValue = getValue();
-    const [value, setValue] = useState(initialValue as string); // Initialize value as string
+    const [value, setValue] = useState(initialValue as string);
 
     const onBlur = () => {
         updateData(index, id, value);
@@ -44,10 +51,24 @@ const EditableCell: React.FC<{
 };
 
 const Table: React.FC<TableProps> = ({ data, columns }) => {
-    const [sortedData, setSortedData] = useState<BookData[]>(data); // State to hold sorted data
-    const [sortOption, setSortOption] = useState<string>(""); // State to hold selected sorting option
+    const [sortedData, setSortedData] = useState<BookData[]>(data);
+    const [sortOption, setSortOption] = useState<string>("");
 
-    //sorting logic
+    const updateData = (rowIndex: number, columnId: string, value: unknown) => {
+        setSortedData((old) =>
+            old.map((row, index) => {
+                if (index === rowIndex) {
+                    return {
+                        ...row,
+                        [columnId]: value,
+                    };
+                }
+                return row;
+            })
+        );
+    };
+
+    //table row sorting logic
     useEffect(() => {
         const sortData = (option: string) => {
             let sorted: BookData[] = [];
@@ -62,30 +83,28 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
                     return b.first_publish_year - a.first_publish_year;
                 });
             } else {
-                sorted = data; // If no sort option selected, use the initial data
+                sorted = data;
             }
             setSortedData(sorted);
         };
         sortData(sortOption);
-    }, [sortOption, data]); // Re-sort data when sortOption changes
-    // Declare essential modules from tanstack table
+    }, [sortOption, data]);
+
     const table = useReactTable<BookData>({
         columns,
-        data: sortedData, // Use sorted data for rendering
+        data: sortedData,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         autoResetPageIndex: false,
         meta: {
-            updateData: (rowIndex: number, columnId: string, value: unknown) => {
-                console.log("Update data logic:", rowIndex, columnId, value);
-            },
+            updateData,
         },
     });
 
     return (
         <div className="overflow-x-auto mx-4">
-            {/* Ascending & Descending sorting menu*/}
+            {/* Ascending & Descending sorting menu */}
             <div className="flex items-center gap-2 mb-3">
                 <span>Sort by:</span>
                 <select
@@ -132,7 +151,7 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
                                         getValue={cell.getValue}
                                         index={row.index}
                                         id={cell.column.id}
-                                        updateData={table.options.meta?.updateData}
+                                        updateData={updateData} // Ensure updateData is passed directly
                                     />
                                 </td>
                             ))}

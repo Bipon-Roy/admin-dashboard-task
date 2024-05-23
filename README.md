@@ -1,6 +1,6 @@
 ## Live Preview
 
-[Live Link](https://mobile-shop-assign.netlify.app/)
+[Live Link](https://frontend-task-nua.netlify.app/)
 
 ## Development Environment Setup Guide
 
