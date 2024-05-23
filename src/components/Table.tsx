@@ -17,26 +17,26 @@ interface TableProps {
 
 // Define a custom cell component
 const EditableCell: React.FC<{
-    getValue: () => any;
+    getValue: () => unknown; // Update the typing for getValue
     index: number;
     id: string;
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
 }> = ({ getValue, index, id, updateData }) => {
     const initialValue = getValue();
-    const [value, setValue] = useState(initialValue);
+    const [value, setValue] = useState(initialValue as string); // Initialize value as string
 
     const onBlur = () => {
         updateData(index, id, value);
     };
 
     useEffect(() => {
-        setValue(initialValue);
+        setValue(initialValue as string);
     }, [initialValue]);
 
     return (
         <input
             className="focus:outline-none focus:border border-blue-400 rounded px-1"
-            value={value as string}
+            value={value}
             onChange={(e) => setValue(e.target.value)}
             onBlur={onBlur}
         />
@@ -53,12 +53,12 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
             let sorted: BookData[] = [];
             if (option === "Ascending") {
                 sorted = [...data].sort((a, b) => {
-                    if (a.rating !== b.rating) return a.rating - b.rating;
+                    if (a.rating !== b.rating) return Number(a.rating) - Number(b.rating);
                     return a.first_publish_year - b.first_publish_year;
                 });
             } else if (option === "Descending") {
                 sorted = [...data].sort((a, b) => {
-                    if (a.rating !== b.rating) return b.rating - a.rating;
+                    if (a.rating !== b.rating) return Number(b.rating) - Number(a.rating);
                     return b.first_publish_year - a.first_publish_year;
                 });
             } else {
