@@ -7,23 +7,12 @@ import {
     getPaginationRowModel,
     flexRender,
 } from "@tanstack/react-table";
+import { BookData } from "../utils/fetchBookData";
 
 // Define the props for your Table component
 interface TableProps {
-    data: Data[];
-    columns: ColumnDef<Data>[];
-}
-
-// Define the shape of your data
-interface Data {
-    title: string;
-    key: string;
-    author_names: string;
-    first_publish_year: number;
-    subject?: string;
-    author_birth_date?: string;
-    author_top_work?: string;
-    rating?: string;
+    data: BookData[];
+    columns: ColumnDef<BookData>[];
 }
 
 // Define a custom cell component
@@ -54,27 +43,62 @@ const EditableCell: React.FC<{
     );
 };
 
+// Declare essential modules from tanstack table
 const Table: React.FC<TableProps> = ({ data, columns }) => {
-    const table = useReactTable<Data>(
-        {
-            columns,
-            data,
-            getCoreRowModel: getCoreRowModel(),
-            getFilteredRowModel: getFilteredRowModel(),
-            getPaginationRowModel: getPaginationRowModel(),
-            autoResetPageIndex: false,
-            meta: {
-                updateData: (rowIndex: number, columnId: string, value: unknown) => {
-                    console.log("Update data logic:", rowIndex, columnId, value);
-                },
+    const [sortedData, setSortedData] = useState<BookData[]>(data); // State to hold sorted data
+    const [sortOption, setSortOption] = useState<string>(""); // State to hold selected sorting option
+
+    useEffect(() => {
+        const sortData = (option: string) => {
+            let sorted: BookData[] = [];
+            if (option === "Ascending") {
+                sorted = [...data].sort((a, b) => {
+                    if (a.rating !== b.rating) return a.rating - b.rating;
+                    return a.first_publish_year - b.first_publish_year;
+                });
+            } else if (option === "Descending") {
+                sorted = [...data].sort((a, b) => {
+                    if (a.rating !== b.rating) return b.rating - a.rating;
+                    return b.first_publish_year - a.first_publish_year;
+                });
+            } else {
+                sorted = data; // If no sort option selected, use the initial data
+            }
+            setSortedData(sorted);
+        };
+        sortData(sortOption);
+    }, [sortOption, data]); // Re-sort data when sortOption changes
+
+    const table = useReactTable<BookData>({
+        columns,
+        data: sortedData, // Use sorted data for rendering
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        autoResetPageIndex: false,
+        meta: {
+            updateData: (rowIndex: number, columnId: string, value: unknown) => {
+                console.log("Update data logic:", rowIndex, columnId, value);
             },
         },
-        []
-    );
+    });
 
     return (
         <div className="overflow-x-auto mx-4">
+            <div className="flex items-center gap-2 mb-3">
+                <span>Sort by:</span>
+                <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                    className="border border-blue-400 px-4 py-2 rounded focus:outline-none"
+                >
+                    <option value="">Select an option</option>
+                    <option value="Ascending">Ascending</option>
+                    <option value="Descending">Descending</option>
+                </select>
+            </div>
             <table className="table-auto min-w-full">
+                {/* render table head with editable rows functionality */}
                 <thead>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr
@@ -96,6 +120,7 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
                         </tr>
                     ))}
                 </thead>
+                {/* render table rows with editable rows functionality */}
                 <tbody>
                     {table.getRowModel().rows.map((row) => (
                         <tr key={row.id} className="bg-white text-xs md:text-base">
@@ -132,7 +157,7 @@ const Table: React.FC<TableProps> = ({ data, columns }) => {
                                 const page = e.target.value ? Number(e.target.value) - 1 : 0;
                                 table.setPageIndex(page);
                             }}
-                            className="border  px-4 w-16 py-2 rounded"
+                            className="border px-4 w-16 py-2 rounded focus:outline-none"
                         />
                     </span>
                     <select

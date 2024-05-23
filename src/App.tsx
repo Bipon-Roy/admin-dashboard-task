@@ -28,6 +28,7 @@ function App() {
 
         fetchData();
     }, []);
+    console.log(bookData);
 
     //declaring columns
     const columns = useMemo(
@@ -65,6 +66,7 @@ function App() {
         []
     );
 
+    //show a message until data fetching is completed
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen text-blue-500 text-2xl">
@@ -75,6 +77,9 @@ function App() {
 
     return (
         <div className="container mx-auto my-8">
+            <h1 className="text-blue-500 text-center p-1 md:text-xl uppercase font-medium mb-3">
+                an admin dashboard table
+            </h1>
             <Table data={bookData} columns={columns} />
         </div>
     );
